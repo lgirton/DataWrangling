@@ -29,7 +29,7 @@ def parse_children(elem, entity):
 			if match:
 				entity['address'][match.group(0)] = v
 			elif k in ('amenity', 'cuisine'):
-				entity[k] = v.split(';')
+				entity[k] = re.split('\W+', v.lower().strip())
 			else:
 				entity[k] = v
 
