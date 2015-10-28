@@ -1,98 +1,154 @@
-#Count types
+sandiego.osm ..... 516.38 MB
+sandiego.osm.json. 583.01 MB
+sandiego.osm.db .. 	 1.95 GB
+
+# Number of entities
+db.sandiego.count()
+
+> 1645464
+
+# Number of entity by type
 db.sandiego.aggregate([
-	{
-		$group: {
-			_id: "$entity_type", 
-			count: { $sum: 1}
-		}
-	}
+	{$group: {_id: '$entity_type', count: {$sum: 1}}}
 ])
 
-#Distinct created.users
-db.sandiego.distinct(created.user).count()
+> { "_id" : "way", "count" : 119316 }
+> { "_id" : "node", "count" : 1526148 }
 
-#Top contributor
+# Distinct # of users
+db.sandiego.distinct('created.user').length
+
+> 1144
+
+# Top 10 Contributors
 db.sandiego.aggregate([
-	{
-		$group: {
-			_id: "$created.user", 
-			count: { $sum: 1}
-		},
-	},
-	{
-		$sort: {
-			"count": -1
-		}
-	},
-	{
-		$limit: 10
-	}
+	{$group: {_id: '$created.user', 'count': {$sum: 1}}},
+	{$sort: {'count': -1}},
+	{$limit: 10}
 ])
 
-#Top amenities
+> { "_id" : "Adam Geitgey", "count" : 680725 }
+> { "_id" : "Sat", "count" : 203592 }
+> { "_id" : "woodpeck_fixbot", "count" : 193483 }
+> { "_id" : "Zian Choy", "count" : 27019 }
+> { "_id" : "chdr", "count" : 24300 }
+> { "_id" : "evil saltine", "count" : 19671 }
+> { "_id" : "Brian@Brea", "count" : 18463 }
+> { "_id" : "stevea", "count" : 15790 }
+> { "_id" : "patodamadre", "count" : 15164 }
+> { "_id" : "colarusso_chris321", "count" : 15032 }
+
+
+# Top 10 Amenities
 db.sandiego.aggregate([
-{
-	$match: 
-	{
-		amenity: 
-		{
-			$exists: 1
-		} 
-	}	
-},
-{ $group: {
-	_id: "$amenity",
-	count: { $sum: 1 }
-}},
-{
-	$sort: {
-		"count": -1
-	}
-}
+	{$match: {'amenity': {$exists: 1}}},
+	{$group: {_id: '$amenity', count: {$sum: 1}}},
+	{$sort: {'count': -1}},
+	{$limit: 10}
 ])
 
+> { "_id" : [ "parking" ], "count" : 2407 }
+> { "_id" : [ "place_of_worship" ], "count" : 1069 }
+> { "_id" : [ "school" ], "count" : 826 }
+> { "_id" : [ "fast_food" ], "count" : 744 }
+> { "_id" : [ "restaurant" ], "count" : 680 }
+> { "_id" : [ "bar" ], "count" : 289 }
+> { "_id" : [ "fuel" ], "count" : 258 }
+> { "_id" : [ "cafe" ], "count" : 231 }
+> { "_id" : [ "bank" ], "count" : 200 }
+> { "_id" : [ "toilets" ], "count" : 147 }
 
+
+# Parking types
 db.sandiego.aggregate([
-{
-	$match: {
-		entity_type: "node",
-		amenity: "restaurant",
-		cuisine: {$exists: true}
-	}
-},
-{
-	$group: {
-		_id: "$cuisine",
-		count: { $sum : 1 }
-	}
-},
-{
-	$sort: {
-		"count": -1
-	}
-}
+	{$match: {'amenity': 'parking'}},
+	{$group: {_id: '$parking', count: {$sum: 1}}}
 ])
 
+> { "_id" : "underground", "count" : 3 }
+> { "_id" : "multi-storey", "count" : 65 }
+> { "_id" : "surface", "count" : 143 }
+> { "_id" : null, "count" : 2196 }
+
+# Place of worship religions
 db.sandiego.aggregate([
-{
-	$match: {
-		entity_type: "node",
-		diet: {$exists: true}
-	}
-},
-{
-	$group: {
-		_id: "$cuisine",
-		count: { $sum : 1 }
-	}
-},
-{
-	$sort: {
-		"count": -1
-	}
-}
+	{$match: {'amenity': 'place_of_worship'}},
+	{$group: {_id: '$religion', count: {$sum: 1}}},
+	{$sort: {'count': -1}}
 ])
 
 
+> { "_id" : "christian", "count" : 985 }
+> { "_id" : null, "count" : 52 }
+> { "_id" : "jewish", "count" : 9 }
+> { "_id" : "muslim", "count" : 6 }
+> { "_id" : "buddhist", "count" : 5 }
+> { "_id" : "hindu", "count" : 4 }
+> { "_id" : "unitarian_universalist", "count" : 2 }
+> { "_id" : "unitarian", "count" : 1 }
+> { "_id" : "bahai", "count" : 1 }
+> { "_id" : "scientologist", "count" : 1 }
+> { "_id" : "ascended_master_teachings", "count" : 1 }
+> { "_id" : "sikh", "count" : 1 }
+> { "_id" : "taoist", "count" : 1 }
 
-db.sandiego.find({ entity_type: "node", amenity: "restaurant", cuisine: null })
+db.sandiego.aggregate([
+	{$match: {'cuisine': {$exists: 1}}},
+	{$group: {_id: '$cuisine', count: {$sum: 1}}},
+	{$sort: {'count': -1}}
+])
+
+db.sandiego.aggregate([
+	{$match: {'amenity': {$exists: 1}}},
+	{$group: {_id: '$amenity', count: {$sum: 1}}},
+	{$sort: {_id: 1}},
+]) 
+
+db.sandiego.aggregate([
+	{$match: {'address.country': {$exists: 1}}},
+	{$group: {_id: '$address.country', count: {$sum: 1}}},
+	{$sort: {_id: 1}},
+])
+
+db.sandiego.aggregate([
+	{$group: {_id: '$created.user', count: {$sum: 1}}},
+	{$sort: {'count': -1}},
+	{$limit: 5}
+])
+
+db.sandiego.aggregate([
+	{$group: {_id: '$created.user', count: {$sum: 1}}},
+	{$group: {_id: '$count', 'num_users': {$sum: 1}}},
+	{$sort: {_id: 1}},
+	{$limit: 1}
+])
+
+db.sandiego.aggregate([
+	{$match: {amenity: {$in: ['restaurant', 'fast_food']}}},
+	{$group: {_id: '$cuisine', count: {$sum: 1}}},
+	{$sort: {count: -1}},
+	{$limit: 10}
+])
+
+db.sandiego.aggregate([
+	{$match: {amenity: {$in: ['restaurant', 'fast_food']}, cuisine: {$exists: null}}}
+])
+
+db.sandiego.aggregate([
+	{$match: {amenity: {$in: ['restaurant']}, cuisine: {$exists: null}}},
+	{$group: {_id: '$created.user', count: {$sum: 1}}},
+	{$sort: {count: -1}}
+
+])
+
+db.sandiego.aggregate([
+	{$match: {cuisine: {$exists: 1}}},
+	{$group: {_id: '$cuisine', count: {$sum: 1}}},
+	{$sort: {count: -1}}
+])
+
+db.sandiego.aggregate([
+	{$group: {_id: '$cuisine'}},
+	{$sort: {cuisine: 1}},
+	{$project: {_id: 1}}
+])

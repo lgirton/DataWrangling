@@ -11,10 +11,11 @@ CREATED = ['version','changeset','timestamp','user','uid']
 # List of tags that should be put into a nested 'pos' dictionary.
 POS = ['lat','lon']
 
-# Compiled regular expression to match 'tag' element 'key' attribute.
+# Compiled regular expressions used to match and wrangle data for faster processing.
 RE_ADDR = re.compile('(?<=addr\:).*')
-
 RE_WORD = re.compile('\W+')
+RE_UNDR = re.compile('^_')
+RE_RTRM = re.compile('^[^,]*')
 
 # Iterates over the child elements and adds dictionary representations
 # to the parent 'entity' object.
@@ -28,9 +29,17 @@ def parse_children(elem, entity):
 			
 			match = RE_ADDR.search(k)
 			if match:
-				entity['address'][match.group(0)] = v
+				atype = match.group(0)
+
+				# Strip overqualification of city name 
+				# (e.g. 'Chicago, IL' in the city field should just be 'Chicago')
+				if atype == 'city':
+					v = RE_RTRM.search(v).group(0).title()
+				entity['address'][atype] = v
 			elif k in ('amenity', 'cuisine'):
-				entity[k] = list(set(RE_WORD.split(v.lower().strip())))
+				items = list(set(RE_WORD.split(v.lower().strip())))
+				items = [RE_UNDR.sub('', item) for item in items]
+				entity[k] = items
 			else:
 				entity[k] = v
 

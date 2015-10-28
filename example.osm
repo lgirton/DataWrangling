@@ -22,7 +22,7 @@
   <tag k="highway" v="traffic_signals"/>
  </node>
   <node id="2406124091" visible="true" version="2" changeset="17206049" timestamp="2013-08-03T16:43:42Z" user="linuxUser16" uid="1219059" lat="41.9757030" lon="-87.6921867">
-  <tag k="addr:city" v="Chicago"/>
+  <tag k="addr:city" v="Chicago, IL"/>
   <tag k="addr:housenumber" v="5157"/>
   <tag k="addr:postcode" v="60625"/>
   <tag k="addr:street" v="North Lincoln Ave"/>
