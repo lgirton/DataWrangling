@@ -27,7 +27,7 @@
   <tag k="addr:postcode" v="60625"/>
   <tag k="addr:street" v="North Lincoln Ave"/>
   <tag k="amenity" v="restaurant"/>
-  <tag k="cuisine" v="mexican"/>
+  <tag k="cuisine" v="mexican; Mexican"/>
   <tag k="name" v="La Cabana De Don Luis"/>
   <tag k="outdoor_seating" v="no"/>
   <tag k="phone" v="1 (773)-271-5176"/>

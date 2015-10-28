@@ -14,6 +14,7 @@ POS = ['lat','lon']
 # Compiled regular expression to match 'tag' element 'key' attribute.
 RE_ADDR = re.compile('(?<=addr\:).*')
 
+RE_WORD = re.compile('\W+')
 
 # Iterates over the child elements and adds dictionary representations
 # to the parent 'entity' object.
@@ -29,7 +30,7 @@ def parse_children(elem, entity):
 			if match:
 				entity['address'][match.group(0)] = v
 			elif k in ('amenity', 'cuisine'):
-				entity[k] = re.split('\W+', v.lower().strip())
+				entity[k] = list(set(RE_WORD.split(v.lower().strip())))
 			else:
 				entity[k] = v
 
