@@ -17,7 +17,7 @@ All of the code and content for this project is accessible in my [DataWrangling]
 
 ### Problems Encountered
 
-* Inconsisent naming of streets
+* Over-abbreviated street type names
 * Inconsisent postal codes
 * Incorrect postal codes
 * Inconsistent city names
@@ -26,7 +26,21 @@ All of the code and content for this project is accessible in my [DataWrangling]
 * Multiple cuisine and amenity tags
 * Missing cuisine identifiers
 
-#### Inconsisent naming of streets
+#### Over-abbreviated street type names
+During the analysis of the OSM file, we encountered an inconsistency of street type abbreviations (e.g 'Av.' instead of Avenue).  Below is a subroutine that is a part of the [_parse\_osm.py_][parse_osm] script. This function will parse the last word of the `addr:street` tag element value and match that to a reverse-lookup dictionary in _R\_STREET\_TYPE\_MAP_ (using regular expressions)of the common abbreviation and transform to it's proper name.
+
+```python
+def parse_street(key, val, entity):
+    suffix = RE_STRT.search(val, re.IGNORECASE)
+    if suffix:
+        suffix = suffix.group()
+        if suffix in R_STREET_TYPE_MAP.keys():
+            val = val.replace(suffix, R_STREET_TYPE_MAP[suffix])
+    entity['address'][key] = val
+...
+
+```
+
 #### Inconsisent postal codes
 #### Incorrect postal codes
 #### Inconsistent city names
@@ -100,3 +114,5 @@ san-diego-county.osm.json ... 583.01 MB
 ```
 
 ### Conclusion
+
+[parse_osm]: https://github.com/lgirton/DataWrangling/blob/master/parse_osm.py
