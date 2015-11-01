@@ -1,4 +1,4 @@
-<font size='7' color='steelblue'>Wrangling Tacos in San Diego</font>
+<font size='7' color='steelblue'>Taco Wrangling in San Diego</font>
 <font size='5'>Udacity: Data Wrangling with MongoDB</font>
 <font size='4' color='grey'>Lamont Girton</font>
 <font size='4' color='grey'>October 23, 2015</font>
@@ -187,22 +187,56 @@ san-diego-county.osm.json ... 583.01 MB
 ```
 
 ### Additional Ideas
-```
-> db.sandiego.aggregate([
-...   {$match: {cuisine: {$exists: 1}, amenity: 'fast_food'}},
-...   {$group: {_id: '$cuisine', count: {$sum: 1}}},
-...   {$sort: {count: -1}}
-... ])
 
-{ "_id" : [ "burger" ], "count" : 238 }
-{ "_id" : [ "sandwich" ], "count" : 114 }
-{ "_id" : [ "mexican" ], "count" : 102 }
-{ "_id" : [ "pizza" ], "count" : 55 }
-{ "_id" : [ "chicken" ], "count" : 25 }
+#### Missing Data
+
+Once the data was in MongoDB it what simple to query and determine if there data were missing.  For example, when researching the Mexican restaurants, I noticed that there were restaurants that did not tag the _cuisine_:
 
 ```
+> db.sandiego.find(
+... {
+... amenity: {$in: ['restaurant', 'fast_food']}, 
+... cuisine: null
+... }).count()
+396
+
+```
+From this, it can be seen that there are almost 400 restaurants and/or fast food amenities that don't have a _cuisine_ attributed to them (potentially more Taco Shops missed).  An idea for this would be to use a reverse geocoding service (perhaps Google's) to find out what cuisine types are offered and makes submissions back to OpenStreetMap.
+
+#### Visualizing Open Street Data
+Now that we have the data imported into MongoDB, I used the query mechanism to to export a list of the latitude and longitude coordinate, so that I could create a plot in _R_ using the [_ggmap_](https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf) package.  Below is the command used to export a query of the geolocation information for nodes that has _cuisine_ designated as 'mexican'
+
+```bash
+mongoexport --db osm --collection sandiego -q '{cuisine: "mexican", pos: {$exists: 1}}' -f pos --type=csv > geo-mexican.csv
+```
+
+Below is a visualization of the San Diego area with the location of places with Mexican Cuisine plotted as red triangles.  Density lines have been added to highlight areas of concentration.  From this map, you can see that Mission Valley is a good place for tacos (I also recommend Old Town, which is just north of the airport).
+
+![](densityplot.png)
+
+Below is the R code used to render the map:
+
+```r
+library(ggmap)
+
+# Read geolocation information
+geo <- read.csv("~/DataWrangling/geo-mexican.csv", stringsAsFactors = F)
+
+# Load OpenStreetMap for San Diego
+map <- get_map("san diego", source='stamen', maptype = 'toner-lite', color="bw", zoom=11)
+
+# Plot map
+ggmap(map, extent = 'device') +
+    geom_point(aes(lon, lat), data=geo, color='black', fill='red', pch=25) +
+    stat_density2d(aes(lon, lat, color=..level..), geo, bins=8, size=1) +
+    scale_color_gradient(low = "green", high = "red") +
+    ggtitle("Concentration of Mexican Cuisine in San Diego")
+```
+
 
 ### Conclusion
+This exercise has demonstrated that the San Diego Open Street Map data is incomplete, but I have to say that the contributions by the community are impressive, especially for the fact that the information is freely available.  I was able to sufficiently clean the data for this project to obtain the results that I wanted.  Based on the efforts, I can see ways of using reverse geocoding information to go back and help update some of the missing/incorrect data at OpenStreetMap, using Python and MongoDB. 
+
 
 [repo]: https://github.com/lgirton/DataWrangling
 [parse_osm]: https://github.com/lgirton/DataWrangling/blob/master/parse_osm.py
